@@ -1,29 +1,41 @@
 Web VPython 3.2
-spring_length = 0.4
 
-cow_mass = 0.5
-k_total = 300 #spring constant 
-node_num = 3
-unstretched_length = 1
-k = spring_num * k_total
+#Sliders will be used to change the following variables; default values so far 
+cow_mass = 0.5  #initial mass of cow 
+spring_num = 1 #initial number of springs VARIABLE
+k_rope = 500 #total spring constant VARIABLE
+node_num = 1 #total number of nodes VARIABLE; 1 is default, with spring and cow 
+spring_num = node_num 
+rope_length = 1 #VARIABLE
+rope_mass = 5 #VARIABLE 
+
+#The following variables are calculated based on the sliders 
+k_each = k_rope / spring_num #CALCULATED 
+spring_length = rope_length / spring_num #CALCULATED 
 gravity = 9.81
-node_mass = rope_mass / node_num
-rope_mass = 5 
+node_mass = rope_mass / node_num #CALCULATED 
+
 
 attatchment_point = box(pos=vector(0, 5, 0), size=vector(2, 0.1, 0.1), color=color.gray(1))
-spring = helix(pos=vector(0,2,0), axis=vector(0,-1,0), size=vector(5,1,1), stiffness=1.0 )
+spring0 = helix(pos=vector(0,5,0), axis=vector(0,-1,0), size=vector(5,1,1), stiffness=1.0 )
 cow = sphere(pos=vec(0, 0, 0), radius=0.1, color=color.white)
 
-def change_length(l):
-    spring.length = l.value
+springList = []
+springList.append(spring0)
 
-spring_length = slider(bind=change_length, min=0, max=10, step=0.1, value=1)
+def change_length(l):
+    rope_length = l.value
+    spring_length = rope_length / spring_num #CALCULATED 
+    for i in range(len(springList)):
+        springList[i].length = spring_length
+
+rope_length_slider = slider(bind=change_length, min=1, max=10, step=0.1, value=1)
 
    
 def change_cow_mass(num):
     cow.radius=num.value
 
-cow_mass = slider(bind=change_cow_mass, min=0.1, max=1.5, step=0.01, value=0.1)
+cow_mass_slider = slider(bind=change_cow_mass, min=0.1, max=1.5, step=0.01, value=0.1)
 
 #def change_nodes(num):
 
