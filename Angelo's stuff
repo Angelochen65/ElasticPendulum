@@ -20,8 +20,10 @@ attatchment_point = box(pos=vector(0, 5, 0), size=vector(2, 0.1, 0.1), color=col
 spring0 = helix(pos=vector(0,5,0), axis=vector(0,-1,0), size=vector(5,1,1), stiffness=1.0 )
 cow = sphere(pos=spring0.pos+spring0.axis, radius=0.1, color=color.white)
 
-springList = []
-springList.append(spring0)
+
+#    
+#springList = []
+#springList.append(spring0)
 #
 #def change_length(l):
 #    global rope_length, spring_length
@@ -48,26 +50,33 @@ cow.vel = vector(0,0,0)
 cow.acc = vector(0,0,0)
 elongation = 0
 
+running = False
 
-while True: 
+startButton = button(bind=bouncing, text="Click to start", background=color.red, pos=scene.title_anchor)
+
+def bouncing():
+    global running
+    
+    running = not running
+
+while True:  
     rate(1/dt)
-    
-    r = cow.pos-spring0.pos
-    r_hat = norm(r)
-    current_length = mag(r)
-    elongation = current_length - spring_length
-    
-    
-    
-    spring_force = - k_each * elongation * r_hat
-    gravitational_force = cow_mass * gravity
-    
-    f_net = gravitational_force + spring_force
-    cow.acc = f_net / cow_mass
-    cow.vel+= cow.acc * dt
-    cow.pos+= cow.vel * dt
-    
-    spring0.axis = cow.pos - spring0.pos
+    if not running: 
+        cow.pos = cow.pos
+        spring0.axis = spring0.axis
+
+    if running:  
+        r = cow.pos-spring0.pos
+        r_hat = norm(r)
+        current_length = mag(r)
+        elongation = current_length - spring_length  
+        spring_force = - k_each * elongation * r_hat
+        gravitational_force = cow_mass * gravity   
+        f_net = gravitational_force + spring_force
+        cow.acc = f_net / cow_mass
+        cow.vel+= cow.acc * dt
+        cow.pos+= cow.vel * dt
+        spring0.axis = cow.pos - spring0.pos
     
     
     
