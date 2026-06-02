@@ -15,6 +15,7 @@ spring_length = rope_length / spring_num #CALCULATED
 gravity = 9.81
 node_mass = rope_mass / node_num #CALCULATED 
 
+
 #Cow kinematics variables
 equilPos = (0,0,0)
 initPos = vector(0,0,0)
@@ -34,7 +35,13 @@ def change_length(l):
     for i in range(len(springList)):
         springList[i].length = spring_length
 
-rope_length_slider = slider(bind=change_length, min=1, max=10, step=0.1, value=1)
+def change_length(l):
+    rope_length = l.value
+    spring_length = rope_length / spring_num #CALCULATED 
+    for i in range(len(springList)):
+        springList[i].length = spring_length
+
+rope_length_slider = slider(bind=change_length, min=1, max=10, step=0.1, value=5)
 
    
 def change_cow_mass(num):
@@ -42,29 +49,25 @@ def change_cow_mass(num):
 
 cow_mass_slider = slider(bind=change_cow_mass, min=0.1, max=1.5, step=0.01, value=0.1)
 
-def change_angle(ang):
+def change_angle_long(ang):
+    spring_length=rope_length_slider.value
     spring0.axis.y = spring_length*cos(ang.value)
-    spring0.axis.x = spring_length*sin(ang.value)
+    spring0.axis.x = -spring_length*sin(ang.value)
     
-angle_slider = slider(bind=change_angle, min=0, max=90, step=0.1, value=45)
-
-#def spring_force(k, X, v):
-#    return -k*X - 0.2*sqrt(ball.mass*k)*v
-
+def change_angle_zaxis(ang):
+    #spring_length=rope_length_slider.value
+    spring0.axis.z = -spring_length*sin(ang.value)
+    
+    
+    
+angle_slider_long = slider(bind=change_angle_long, min=pi/2, max=3*pi/2, step=pi/30, value=pi)
+scene.append_to_caption('\n\n')
+angle_slider_zaxis = slider(bind=change_angle_zaxis, min=-pi/2, max=pi/2, step=pi/30, value=0)
 
 #def change_nodes(num):
 
 # L = middleball.pos-topball.pos
 # Lhat = L/mag(L)
 # stretch = mag(L) - unstretched_length
-
-
-#def spring_Force(k, stretch, L):
-#    return -k*stretch*Lhat - 0.2*sqrt(cow_mass*k)*v
-    
-#cow_acc = spring_Force(spring.k, (cow.pos-equilPos), ball.vel)/cow_mass   # F=ma
-#        ball.vel += ball.acc*deltaT           # Euler Method
-#        ball.pos += ball.vel*deltaT
-        
-        
+# spring_Force = -k*s*Lhat
 # gravity_Force = -node_mass * gravity
