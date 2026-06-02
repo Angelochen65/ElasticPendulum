@@ -45,6 +45,7 @@ def change_angle_long(ang):
     spring_length=rope_length_slider.value
     spring0.axis.y = spring_length*cos(ang.value)
     spring0.axis.x = -spring_length*sin(ang.value)
+    cow.pos = spring0.pos + spring0.axis
     
 def change_angle_zaxis(ang):
     #spring_length=rope_length_slider.value
