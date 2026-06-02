@@ -1,7 +1,7 @@
 Web VPython 3.2
 
 #Sliders will be used to change the following variables; default values so far 
-cow_mass = 5  #initial mass of cow 
+cow_mass = 500  #initial mass of cow 
 spring_num = 1 #initial number of springs VARIABLE
 k_rope = 500 #total spring constant VARIABLE
 node_num = 1 #total number of nodes VARIABLE; 1 is default, with spring and cow 
@@ -22,23 +22,23 @@ cow = sphere(pos=spring0.pos+spring0.axis, radius=0.1, color=color.white)
 
 springList = []
 springList.append(spring0)
-
-def change_length(l):
-    global rope_length, spring_length
-
-    rope_length = l.value
-    spring_length = rope_length
-    cow.pos = spring0.pos + vector(0,-spring_length,0)
-    cow.vel = vector(0,0,0)
-
-rope_length_slider = slider(bind=change_length, min=0.5, max=5, step=0.1, value=rope_length)
-
-
-def change_cow_mass(l):
-    global cow_mass
-    cow_mass = l.value
-
-cow_mass_slider = slider(bind=change_cow_mass,min=0.5,max=20,step=0.1,value=cow_mass)
+#
+#def change_length(l):
+#    global rope_length, spring_length
+#
+#    rope_length = l.value
+#    spring_length = rope_length
+#    cow.pos = spring0.pos + vector(0,-spring_length,0)
+#    cow.vel = vector(0,0,0)
+#
+#rope_length_slider = slider(bind=change_length, min=0.5, max=5, step=0.1, value=rope_length)
+#
+#
+#def change_cow_mass(l):
+#    global cow_mass
+#    cow_mass = l.value
+#
+#cow_mass_slider = slider(bind=change_cow_mass,min=0.5,max=20,step=0.1,value=cow_mass)
 
 
 t = 0
@@ -46,20 +46,17 @@ dt = 0.001
 mass_init_v = 0
 cow.vel = vector(0,0,0)
 cow.acc = vector(0,0,0)
-elongation = vector(0,0,0)
-
+elongation = 0
 
 
 while True: 
-    rate(60)
+    rate(1/dt)
     
     r = cow.pos-spring0.pos
-    if mag(r) > 0:
-       r_hat = norm(r)
-    else:
-        r_hat = vector(0,0,0)
+    r_hat = norm(r)
     current_length = mag(r)
-    elongation = current_length - spring_length 
+    elongation = current_length - spring_length
+    
     
     
     spring_force = - k_each * elongation * r_hat
