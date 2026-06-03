@@ -5,22 +5,27 @@ cow_mass = 50 #initial mass of cow
 spring_num = 1 #initial number of springs VARIABLE
 k_rope = 500 #total spring constant VARIABLE
 node_num = 1 #total number of nodes VARIABLE; 1 is default, with spring and cow 
-spring_num = node_num 
 rope_length = 1 #VARIABLE
 rope_mass = 5 #VARIABLE 
-
+addSprings = True
 
 #The following variables are calculated based on the sliders 
 k_each = k_rope / spring_num #CALCULATED 
 spring_length = rope_length / spring_num #CALCULATED 
 gravity = vector(0,-9.81,0)
 node_mass = rope_mass / node_num #CALCULATED 
+springList = []
+nodeList = []
+springPos = vector(0,5,0)
+springAxis = vector(0,-1,0)
+
+
 
 
 attatchment_point = box(pos=vector(0, 5, 0), size=vector(2, 0.1, 0.1), color=color.gray(1))
-spring0 = helix(pos=vector(0,5,0), axis=vector(0,-1,0), size=vector(spring_length,1,1), stiffness=1.0 )
+spring0 = helix(pos=springPos, axis=springAxis, size=vector(spring_length,1,1), stiffness=1.0 )
 axis = spring0.axis
-cow = sphere(pos=spring0.pos+spring0.axis, radius=0.1, color=color.white)
+cow = sphere(pos=springPos + node_num * springAxis, radius=0.1, color=color.white)
 
 
 
@@ -35,10 +40,23 @@ def change_length(l):
 
 rope_length_slider = slider(bind=change_length, min=spring_length, max=10, step=0.1, value=spring_length)
 
-   
+num_nodes = slider(bind = change_nodes, min = 1, max = 5, step = 1, value = 1)
+
+def change_nodes(num): 
+    global addSprings
+    addSprings = True
+    global node_num 
+    node_num = num.value
+    k_each = k_rope / spring_num #CALCULATED 
+    spring_length = rope_length / spring_num #CALCULATED 
+    node_mass = rope_mass / node_num
+  
+    
+    
+    
 def change_cow_mass(num):
     global cow_mass
-#    cow.radius=num.value
+    cow.radius=num.value
     cow_mass= num.value
 
 cow_mass_slider = slider(bind=change_cow_mass, min=10, max=100, step=1, value=0)
@@ -91,12 +109,25 @@ def bouncing():
     global running
     
     running = not running
+    
 
 while True:  
     rate(1/dt)
+#    print(node_num)
     if not running: 
-        cow.pos = cow.pos
-        spring0.axis = spring0.axis
+        global springList
+        global nodeList
+        springList = []
+        nodeList = []
+        cow.pos= springPos + node_num * springAxis
+        spring0.pos = springPos
+        if addSprings:
+            for i in range(node_num): 
+                if(i > 1):
+                    nodeList.append(sphere(pos = springPos + (node_num - 1) * springAxis, radius = 0.1, color = color.white))
+                springList.append(helix(pos= springPos + i * springAxis, axis = vector(0, -1, 0), size = vector(spring_length, 1, 1), stiffness = 1))          
+            addSprings = False
+            
 
     if running:  
         r = cow.pos-spring0.pos
