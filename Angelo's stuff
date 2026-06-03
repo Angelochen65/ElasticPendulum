@@ -9,6 +9,7 @@ spring_num = node_num
 rope_length = 1 #VARIABLE
 rope_mass = 5 #VARIABLE 
 
+
 #The following variables are calculated based on the sliders 
 k_each = k_rope / spring_num #CALCULATED 
 spring_length = rope_length / spring_num #CALCULATED 
@@ -18,6 +19,7 @@ node_mass = rope_mass / node_num #CALCULATED
 
 attatchment_point = box(pos=vector(0, 5, 0), size=vector(2, 0.1, 0.1), color=color.gray(1))
 spring0 = helix(pos=vector(0,5,0), axis=vector(0,-1,0), size=vector(spring_length,1,1), stiffness=1.0 )
+axis = spring0.axis
 cow = sphere(pos=spring0.pos+spring0.axis, radius=0.1, color=color.white)
 
 
@@ -46,6 +48,8 @@ def change_angle_long(ang):
     spring0.axis.y = spring_length*cos(ang.value)
     spring0.axis.x = -spring_length*sin(ang.value)
     cow.pos = spring0.pos + spring0.axis
+    global axis
+    axis = spring0.axis
     
 def change_angle_zaxis(ang):
     spring_length=rope_length_slider.value
@@ -67,6 +71,21 @@ elongation = 0
 running = False
 
 startButton = button(bind=bouncing, text="Click to start", background=color.red, pos=scene.title_anchor)
+resetButon = button(bind=reset, text = "Reset", background = color.blue, pos = scene.title_anchor)
+
+def reset():
+    global running
+    running = False
+    spring0.pos = vector(0,5,0)
+    spring0.axis = axis
+    cow.pos = spring0.pos + spring0.axis
+    t = 0
+    dt = 0.001
+    mass_init_v = 0
+    cow.vel = vector(0,0,0)
+    cow.acc = vector(0,0,0)
+    elongation = 0
+   
 
 def bouncing():
     global running
