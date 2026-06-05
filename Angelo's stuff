@@ -5,61 +5,55 @@ cow_mass = 50 #initial mass of cow
 spring_num = 1 #initial number of springs VARIABLE
 k_rope = 500 #total spring constant VARIABLE
 node_num = 1 #total number of nodes VARIABLE; 1 is default, with spring and cow 
+spring_num = node_num 
 rope_length = 1 #VARIABLE
 rope_mass = 5 #VARIABLE 
-addSprings = True
+init_longangle = pi
+init_zangle = 0
+
+scene.camera.pos = vec(0,5,5)
 
 #The following variables are calculated based on the sliders 
 k_each = k_rope / spring_num #CALCULATED 
 spring_length = rope_length / spring_num #CALCULATED 
 gravity = vector(0,-9.81,0)
 node_mass = rope_mass / node_num #CALCULATED 
-springList = []
-nodeList = []
-springPos = vector(0,5,0)
-springAxis = vector(0,-1,0)
-
-
 
 
 attatchment_point = box(pos=vector(0, 5, 0), size=vector(2, 0.1, 0.1), color=color.gray(1))
-spring0 = helix(pos=springPos, axis=springAxis, size=vector(spring_length,1,1), stiffness=1.0 )
+spring0 = helix(pos=vector(0,5,0), axis=vector(0,-1,0), size=vector(spring_length,1,1), stiffness=1.0 )
 axis = spring0.axis
-cow = sphere(pos=springPos + node_num * springAxis, radius=0.1, color=color.white)
+cow = sphere(pos=spring0.pos+spring0.axis, radius=0.2, color=color.white)
 
 
 
 def change_length(l):
     spring0.length = l.value
     cow.pos= spring0.pos + spring0.axis
+    LengthText.text = '{:1.2f}'.format(l.value)
+    
     
 #    rope_length = l.value
 #    spring_length = rope_length / spring_num #CALCULATED 
 #    for i in range(len(springList)):
 #        springList[i].length = spring_length
 
+
+scene.append_to_caption("Spring Length\n\n")
 rope_length_slider = slider(bind=change_length, min=spring_length, max=10, step=0.1, value=spring_length)
-
-num_nodes = slider(bind = change_nodes, min = 1, max = 5, step = 1, value = 1)
-
-def change_nodes(num): 
-    global addSprings
-    addSprings = True
-    global node_num 
-    node_num = num.value
-    k_each = k_rope / spring_num #CALCULATED 
-    spring_length = rope_length / spring_num #CALCULATED 
-    node_mass = rope_mass / node_num
-  
-    
-    
-    
+LengthText = wtext(text='{:1.2f}'.format(rope_length_slider.value))
+scene.append_to_caption('\n\n')
+   
 def change_cow_mass(num):
     global cow_mass
-    cow.radius=num.value
+#    cow.radius=num.value
     cow_mass= num.value
-
-cow_mass_slider = slider(bind=change_cow_mass, min=10, max=100, step=1, value=0)
+    CowText.text = '{:1.2f}'.format(num.value)
+    
+scene.append_to_caption("Mass of Cow\n\n")
+cow_mass_slider = slider(bind=change_cow_mass, min=10, max=100, step=1, value=cow_mass)
+CowText = wtext(text='{:1.2f}'.format(change_cow_mass.value))
+scene.append_to_caption('\n\n')
 
 def change_angle_long(ang):
     spring_length=rope_length_slider.value
@@ -68,16 +62,25 @@ def change_angle_long(ang):
     cow.pos = spring0.pos + spring0.axis
     global axis
     axis = spring0.axis
+    LongAngleText.text = '{:1.2f}'.format(ang.value)
     
 def change_angle_zaxis(ang):
     spring_length=rope_length_slider.value
     spring0.axis.z = -spring_length*sin(ang.value)
+    cow.pos = spring0.pos + spring0.axis
+    global axis
+    axis = spring0.axis
+    ZAngleText.text = '{:1.2f}'.format(ang.value)
     
     
-    
-angle_slider_long = slider(bind=change_angle_long, min=pi/2, max=3*pi/2, step=pi/30, value=pi)
+
+scene.append_to_caption("XY Spring Angle\n\n")
+angle_slider_long = slider(bind=change_angle_long, min=pi/2, max=3*pi/2, step=pi/30, value=init_longangle)
+LongAngleText = wtext(text='{:1.2f}'.format(angle_slider_long.value))
 scene.append_to_caption('\n\n')
-angle_slider_zaxis = slider(bind=change_angle_zaxis, min=-pi/2, max=pi/2, step=pi/30, value=0)
+scene.append_to_caption("Z Spring Angle\n\n")
+angle_slider_zaxis = slider(bind=change_angle_zaxis, min=-pi/2, max=pi/2, step=pi/30, value=init_zangle)
+ZAngleText = wtext(text='{:1.2f}'.format(angle_slider_zaxis.value))
 
 t = 0
 dt = 0.001
@@ -93,9 +96,10 @@ resetButon = button(bind=reset, text = "Reset", background = color.blue, pos = s
 
 def reset():
     global running
+    startButton.text = "Click to Start"
     running = False
     spring0.pos = vector(0,5,0)
-    spring0.axis = axis
+    spring0.axis = vector(0,-1,0)
     cow.pos = spring0.pos + spring0.axis
     t = 0
     dt = 0.001
@@ -103,33 +107,30 @@ def reset():
     cow.vel = vector(0,0,0)
     cow.acc = vector(0,0,0)
     elongation = 0
+    angle_slider_long.value = init_longangle
+    angle_slider_zaxis.value = init_zangle
+    rope_length_slider.value = spring_length
+    cow_mass_slider.value = cow_mass
+    scene.camera.pos = vec(0,5,5)
+    wt.text=rope_length
+    
+    
    
 
 def bouncing():
     global running
     
     running = not running
-    
 
 while True:  
     rate(1/dt)
-#    print(node_num)
     if not running: 
-        global springList
-        global nodeList
-        springList = []
-        nodeList = []
-        cow.pos= springPos + node_num * springAxis
-        spring0.pos = springPos
-        if addSprings:
-            for i in range(node_num): 
-                if(i > 1):
-                    nodeList.append(sphere(pos = springPos + (node_num - 1) * springAxis, radius = 0.1, color = color.white))
-                springList.append(helix(pos= springPos + i * springAxis, axis = vector(0, -1, 0), size = vector(spring_length, 1, 1), stiffness = 1))          
-            addSprings = False
-            
+        startButton.text = "Start"
+        cow.pos = cow.pos
+        spring0.axis = spring0.axis
 
     if running:  
+        startButton.text = "Stop"
         r = cow.pos-spring0.pos
         r_hat = norm(r)
         current_length = mag(r)
