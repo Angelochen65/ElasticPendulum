@@ -5,7 +5,6 @@ cow_mass = 50 #initial mass of cow
 spring_num = 1 #initial number of springs VARIABLE
 k_rope = 500 #total spring constant VARIABLE
 node_num = 1 #total number of nodes VARIABLE; 1 is default, with spring and cow 
-spring_num = node_num 
 rope_length = 1 #VARIABLE
 rope_mass = 5 #VARIABLE 
 init_longangle = pi
@@ -14,8 +13,8 @@ init_zangle = 0
 scene.camera.pos = vec(0,5,5)
 
 #The following variables are calculated based on the sliders 
-k_each = k_rope / spring_num #CALCULATED 
-spring_length = rope_length / spring_num #CALCULATED 
+k_each = k_rope / node_num #CALCULATED 
+spring_length = rope_length / node_num #CALCULATED 
 gravity = vector(0,-9.81,0)
 node_mass = rope_mass / node_num #CALCULATED 
 
@@ -25,18 +24,27 @@ spring0 = helix(pos=vector(0,5,0), axis=vector(0,-1,0), size=vector(spring_lengt
 axis = spring0.axis
 cow = sphere(pos=spring0.pos+spring0.axis, radius=0.2, color=color.white)
 
+def change_nodes(num):
+    global node_num
+    node_num = num.value
+    k_each = k_rope / node_num
+    spring_length = rope_length/node_num
+    node_mass = rope_mass / node_num
+    NodesText.text = '{:1.2f}'.format(num.value)
+    
+scene.append_to_caption("Change Nodes\n\n")
+nodes_slider = slider(bind=change_nodes, min=1, max = 5, step = 1, value = 1)
+NodesText = wtext(text='{:1.2f}'.format(nodes_slider.value))
+scene.append_to_caption('\n\n')
 
+
+
+    
 
 def change_length(l):
     spring0.length = l.value
     cow.pos= spring0.pos + spring0.axis
     LengthText.text = '{:1.2f}'.format(l.value)
-    
-    
-#    rope_length = l.value
-#    spring_length = rope_length / spring_num #CALCULATED 
-#    for i in range(len(springList)):
-#        springList[i].length = spring_length
 
 
 scene.append_to_caption("Spring Length\n\n")
