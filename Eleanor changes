@@ -11,7 +11,9 @@ rope_mass = 5 #VARIABLE
 init_longangle = pi
 init_zangle = 0
 
-scene.camera.pos = vec(0,5,5)
+scene = canvas(width=500, height=400, title="<b>Rope Simulation<b>\n\n")
+scene.camera.pos = vec(0,5,7)
+
 
 #The following variables are calculated based on the sliders 
 k_each = k_rope / spring_num #CALCULATED 
@@ -20,10 +22,11 @@ gravity = vector(0,-9.81,0)
 node_mass = rope_mass / node_num #CALCULATED 
 
 
-attatchment_point = box(pos=vector(0, 5, 0), size=vector(2, 0.1, 0.1), color=color.gray(1))
-spring0 = helix(pos=vector(0,5,0), axis=vector(0,-1,0), size=vector(spring_length,1,1), stiffness=1.0 )
+attatchment_point = box(pos=vector(0, 7.5, 0), size=vector(1, 0.1, 1), color=color.gray(1))
+spring0 = helix(pos=vector(0,7.5,-0.5), axis=vector(0,-1,0), size=vector(spring_length,1,1), stiffness=1.0 )
+init_cowpos = spring0.pos+spring0.axis
 axis = spring0.axis
-cow = sphere(pos=spring0.pos+spring0.axis, radius=0.2, color=color.white)
+cow = sphere(pos=init_cowpos, radius=0.2, color=color.white)
 
 
 
@@ -38,21 +41,20 @@ def change_length(l):
 #    for i in range(len(springList)):
 #        springList[i].length = spring_length
 
-
 scene.append_to_caption("Spring Length\n\n")
 rope_length_slider = slider(bind=change_length, min=spring_length, max=10, step=0.1, value=spring_length)
-LengthText = wtext(text='{:1.2f}'.format(rope_length_slider.value))
+LengthText = wtext(text='{:1.2f} centimeters'.format(rope_length_slider.value))
 scene.append_to_caption('\n\n')
    
 def change_cow_mass(num):
-    global cow_mass
+   # global cow_mass
 #    cow.radius=num.value
     cow_mass= num.value
-    CowText.text = '{:1.2f}'.format(num.value)
+    CowText.text = '{:1.2f} '.format(num.value)
     
 scene.append_to_caption("Mass of Cow\n\n")
 cow_mass_slider = slider(bind=change_cow_mass, min=10, max=100, step=1, value=cow_mass)
-CowText = wtext(text='{:1.2f}'.format(change_cow_mass.value))
+CowText = wtext(text='{:1.2f} kilograms'.format(change_cow_mass.value))
 scene.append_to_caption('\n\n')
 
 def change_angle_long(ang):
@@ -62,7 +64,7 @@ def change_angle_long(ang):
     cow.pos = spring0.pos + spring0.axis
     global axis
     axis = spring0.axis
-    LongAngleText.text = '{:1.2f}'.format(ang.value)
+    LongAngleText.text = '{:1.2f} degrees'.format(degrees(ang.value))
     
 def change_angle_zaxis(ang):
     spring_length=rope_length_slider.value
@@ -70,12 +72,12 @@ def change_angle_zaxis(ang):
     cow.pos = spring0.pos + spring0.axis
     global axis
     axis = spring0.axis
-    ZAngleText.text = '{:1.2f}'.format(ang.value)
+    ZAngleText.text = '{:1.2f} degrees'.format(ang.value)
     
     
 
 scene.append_to_caption("XY Spring Angle\n\n")
-angle_slider_long = slider(bind=change_angle_long, min=pi/2, max=3*pi/2, step=pi/30, value=init_longangle)
+angle_slider_long = slider(bind=change_angle_long, min=pi/2, max=3*pi/2, step=1/10, value=init_longangle)
 LongAngleText = wtext(text='{:1.2f}'.format(angle_slider_long.value))
 scene.append_to_caption('\n\n')
 scene.append_to_caption("Z Spring Angle\n\n")
@@ -94,11 +96,24 @@ running = False
 startButton = button(bind=bouncing, text="Click to start", background=color.red, pos=scene.title_anchor)
 resetButon = button(bind=reset, text = "Reset", background = color.blue, pos = scene.title_anchor)
 
+
+#Setting up graphs
+ke_graph = graph(title="Kinetic Energy vs. Time", xtitle="Time (s)", ytitle="Kinetic Energy (J)", align = "left")
+ke_curve = gcurve(color=color.blue, label = "Kinetic Energy")
+ue_graph = graph(title="Elastic Potential Energy vs. Time", xtitle="Time (s)", ytitle="Elastic Potential Energy (J)", align = "left")
+ue_curve = gcurve(color=color.red, label = "Elastic Potential Energy")
+ug_graph = graph(title="Gravitational Potential Energy vs. Time", xtitle="Time (s)", ytitle="Gravitational Potential Energy (J)", align = "left")
+ug_curve = gcurve(color=color.green, label = "Gravitational Potential Energy")
+phase_graph = graph(title="Phase Graph", xtitle="Cow Position", ytitle="Cow Velocity", align = "left")
+phase_curve = gcurve(color=color.orange, label = "Phase Graph")
+
+ugenergy = 0
+
 def reset():
     global running
     startButton.text = "Click to Start"
     running = False
-    spring0.pos = vector(0,5,0)
+    spring0.pos = vector(0,7.5,0)
     spring0.axis = vector(0,-1,0)
     cow.pos = spring0.pos + spring0.axis
     t = 0
@@ -111,10 +126,15 @@ def reset():
     angle_slider_zaxis.value = init_zangle
     rope_length_slider.value = spring_length
     cow_mass_slider.value = cow_mass
-    scene.camera.pos = vec(0,5,5)
+    scene.camera.pos = vec(0,5,7)
     wt.text=rope_length
+    ug_curve.clear()
+    ke_curve.clear()
+    ue_curve.clear()
+    phase_curve.clear()
     
-    
+
+
    
 
 def bouncing():
@@ -130,6 +150,7 @@ while True:
         spring0.axis = spring0.axis
 
     if running:  
+        ke_curve.visible = True
         startButton.text = "Stop"
         r = cow.pos-spring0.pos
         r_hat = norm(r)
@@ -142,7 +163,23 @@ while True:
         cow.vel+= cow.acc * dt
         cow.pos+= cow.vel * dt
         spring0.axis = cow.pos - spring0.pos
-    
+        height = init_cowpos.y - cow.pos.y
+        
+        t= t + dt
+        kinenergy = (0.5)*cow_mass*(cow.vel).mag**2
+        elasticenergy = (0.5) * k_rope * elongation ** 2
+        ugenergy = gravitational_force * height
+        ug_curve.plot(t, ugenergy.y)
+        ke_curve.plot(t, kinenergy)
+        ue_curve.plot(t, elasticenergy)
+        phase_curve.plot(cow.pos.x, cow.vel.x)
+
+#graphs
+#elastic potential energy
+#gravitational potential energy
+#kinetic energy
+
+
     
     
 
