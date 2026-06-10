@@ -30,7 +30,7 @@ attatchment_point = box(pos=vector(0, 7.5, 0), size=vector(1, 0.1, 1), color=col
 spring0 = helix(pos=vector(0,7.5,-0.5), axis=vector(0,-1,0), size=vector(spring_length,1,1), stiffness=1.0 )
 init_cowpos = spring0.pos+spring0.axis
 axis = spring0.axis
-cow = sphere(pos=init_cowpos, radius=0.2, color=color.white)
+cow = sphere(pos=init_cowpos, radius=0.2, texture = "https://thumbs.dreamstime.com/b/seamless-pattern-cow-skin-black-white-vector-illustration-59112851.jpg")
 springList.append(spring0)
 
 
@@ -46,7 +46,7 @@ def change_nodes(num):
     
 scene.append_to_caption("Change Nodes\n\n")
 nodes_slider = slider(bind=change_nodes, min=1, max = 5, step = 1, value = 1)
-NodesText = wtext(text='{:1.2f}'.format(nodes_slider.value))
+NodesText = wtext(text='{:1.2f} nodes'.format(nodes_slider.value))
 scene.append_to_caption('\n\n')
 
 
@@ -134,7 +134,7 @@ def reset():
     global running
     startButton.text = "Click to Start"
     running = False
-    spring0.pos = vector(0,5,0)
+    spring0.pos = vector(0,7.5,0)
     spring0.axis = vector(0,-1,0)
     cow.pos = spring0.pos + spring0.axis
     t = 0
