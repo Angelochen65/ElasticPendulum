@@ -10,6 +10,11 @@ rope_length = 1 #VARIABLE
 rope_mass = 5 #VARIABLE 
 init_longangle = pi
 init_zangle = 0
+springList = []
+springPos = vector(0,5,0)
+springAxis = vector(0,-2,0)
+scene.camera.pos = vec(0,5,5)
+addSpring = False
 
 scene = canvas(width=500, height=400, title="<b>Rope Simulation<b>\n\n")
 scene.camera.pos = vec(0,5,5)
@@ -26,6 +31,23 @@ spring0 = helix(pos=vector(0,7.5,-0.5), axis=vector(0,-1,0), size=vector(spring_
 init_cowpos = spring0.pos+spring0.axis
 axis = spring0.axis
 cow = sphere(pos=init_cowpos, radius=0.2, color=color.white)
+springList.append(spring0)
+
+
+def change_nodes(num):
+    global node_num
+    node_num = num.value
+    k_each = k_rope / node_num
+    spring_length = rope_length/node_num
+    node_mass = rope_mass / node_num
+    NodesText.text = '{:1.2f}'.format(num.value)
+    global addSpring
+    addSpring = True
+    
+scene.append_to_caption("Change Nodes\n\n")
+nodes_slider = slider(bind=change_nodes, min=1, max = 5, step = 1, value = 1)
+NodesText = wtext(text='{:1.2f}'.format(nodes_slider.value))
+scene.append_to_caption('\n\n')
 
 
 
@@ -140,8 +162,20 @@ while True:
     rate(1/dt)
     if not running: 
         startButton.text = "Start"
-        cow.pos = cow.pos
-        spring0.axis = spring0.axis
+        if(node_num > 1 and addSpring):
+            for s in springList:
+                s.visible = False
+            springList = []
+            eachAxis = vector(0, - rope_length / node_num, 0)
+            currentPos = springPos
+            for i in range(node_num):
+                
+                newSpring = helix(pos = currentPos, axis = eachAxis, size=vector(spring_length / node_num,1,1), stiffness = 1)
+                springList.append(newSpring)
+                currentPos+= eachAxis
+            cow.pos = springList[-1].pos + springList[-1].axis
+            spring0 = springList[0]
+            addSpring = not addSpring
 
     if running:  
         startButton.text = "Stop"
