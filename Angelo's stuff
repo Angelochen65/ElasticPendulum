@@ -80,15 +80,13 @@ CowText = wtext(text='{:1.2f}'.format(change_cow_mass.value))
 scene.append_to_caption('\n\n')
 
 def change_angle_long(ang):
-    global initial_ang
-    intitial_ang = ang.value
-    r = vector(-sin(ang.value), cos(ang.value), 0)
     
     each = rope_length / node_num
     currentPos = springPos
     for i in range(node_num):
         springList[i].pos = currentPos
-        springList[i].axis = r * each
+        springList[i].axis.x = -sin(ang.value) * each
+        springList[i].axis.y = cos(ang.value) * each
         currentPos+= springList[i].axis
         
         if i < len(massList):
@@ -96,12 +94,32 @@ def change_angle_long(ang):
     cow.pos = currentPos
     LongAngleText.text = '{:1.2f}'.format(ang.value)
     
+#def change_angle_zaxis(ang):
+#    spring_length=rope_length_slider.value
+#    spring0.axis.z = -spring_length*sin(ang.value)
+#    cow.pos = spring0.pos + spring0.axis
+#    global axis
+#    axis = spring0.axis
+#    ZAngleText.text = '{:1.2f}'.format(ang.value)
+#    
+#    
+#  
+  
+  
 def change_angle_zaxis(ang):
-    spring_length=rope_length_slider.value
-    spring0.axis.z = -spring_length*sin(ang.value)
-    cow.pos = spring0.pos + spring0.axis
-    global axis
-    axis = spring0.axis
+    each = rope_length / node_num
+    currentPos = springPos
+    for i in range(node_num):
+        springList[i].pos = currentPos
+        springList[i].axis.z = -sin(ang.value) * each
+        currentPos += springList[i].axis
+        
+        if i < len(massList):
+            massList[i].pos = currentPos
+    cow.pos = currentPos
+        
+        
+
     ZAngleText.text = '{:1.2f}'.format(ang.value)
     
     
