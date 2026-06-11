@@ -10,6 +10,7 @@ rope_mass = 5 #VARIABLE
 init_longangle = pi
 init_zangle = 0
 springList = []
+massList = []
 springPos = vector(0,5,0)
 springAxis = vector(0,-2,0)
 scene.camera.pos = vec(0,5,5)
@@ -110,12 +111,15 @@ startButton = button(bind=bouncing, text="Click to start", background=color.red,
 resetButon = button(bind=reset, text = "Reset", background = color.blue, pos = scene.title_anchor)
 
 def reset():
-    global running, t, cow, spring0, springList, addSpring
+    global running, t, cow, spring0, springList, addSpring, massList
     startButton.text = "Click to Start"
     running = False
     addSpring = False
     for s in springList:
         s.visible = False
+    for m in massList: 
+        m.visible = False
+    massList = []
     springList = []
     
     currentPos = springPos
@@ -123,6 +127,11 @@ def reset():
         newSpring = helix(pos = currentPos, axis = eachAxis, size=vector(spring_length / node_num,1,1), stiffness = 1)
         springList.append(newSpring)
         currentPos+= eachAxis
+        if( i < node_num - 1):
+            newMass = sphere(pos = currentPos, radius = 0.1, color = color.white)
+            newMass.vel = vector(0,0,0)
+            newMass.acc = vector(0,0,0)
+            massList.append(newMass)
     cow.pos = springList[-1].pos + springList[-1].axis
     spring0 = springList[0]
     t = 0
@@ -153,6 +162,9 @@ while True:
         if(node_num > 1 and addSpring):
             for s in springList:
                 s.visible = False
+            for m in massList:
+                m.visible = False
+            massList = []
             springList = []
             eachAxis = vector(0, - rope_length / node_num, 0)
             currentPos = springPos
@@ -161,22 +173,70 @@ while True:
                 newSpring = helix(pos = currentPos, axis = eachAxis, size=vector(spring_length / node_num,1,1), stiffness = 1)
                 springList.append(newSpring)
                 currentPos+= eachAxis
+                if( i < node_num - 1):
+                    newMass = sphere(pos = currentPos, radius = 0.1, color = color.white)
+                    newMass.vel = vector(0,0,0)
+                    newMass.acc = vector(0,0,0)
+                    massList.append(newMass)
+                
             cow.pos = springList[-1].pos + springList[-1].axis
             spring0 = springList[0]
             addSpring = not addSpring
-    if running:  
+    if running: 
+        global node_mass, k_each
         startButton.text = "Stop"
-        r = cow.pos-spring0.pos
-        r_hat = norm(r)
-        current_length = mag(r)
-        elongation = current_length - spring_length  
-        spring_force = - k_each * elongation * r_hat
-        gravitational_force = cow_mass * gravity   
-        f_net = gravitational_force + spring_force
-        cow.acc = f_net / cow_mass
-        cow.vel+= cow.acc * dt
-        cow.pos+= cow.vel * dt
-        spring0.axis = cow.pos - spring0.pos
+        if len(massList) > 0:
+            springList[0].pos = springPos
+            springList[0].axis = massList[0].pos - springPos
+            
+            for i in range(1, len(massList)):
+                springList[i].pos = massList[i-1].pos
+                springList[i].axis = massList[i].pos - massList[i-1].pos
+            
+            springList[-1].pos = massList[-1].pos
+            springList[-1].axis = cow.pos - massList[-1].pos
+            
+            forces = []
+            
+            for i in range(len(massList)):
+                m = massList[i]
+                
+                if i ==0:
+                    above = springPos
+                else:
+                    above = massList[i-1].pos
+                
+                r_top = above - m.pos
+                F_top = k_each * (mag(r_top) - spring_length/node_num) * norm(r_top)
+                
+                if i < len(massList) - 1:
+                    below = massList[i+1].pos
+                else:
+                    below = cow.pos
+                r_below = below - m.pos
+                F_below = k_each * (mag(r_below) - spring_length/node_num) * norm(r_below)
+                
+                F_g = (rope_mass/node_num) * gravity
+                F_net = F_top + F_below + F_g
+                
+                forces.append(F_net)
+        for i in range(len(massList)):
+            m = massList[i]
+            m.vel += forces[i] / node_mass * dt
+    
+        for i in range(len(massList)):
+            m = massList[i]
+            m.pos += m.vel * dt
+        if len(massList) > 0:
+            last_mass = massList[-1]
+            r = cow.pos - last_mass.pos
+            F_spring = -k_each * (mag(r) - spring_length/node_num) * norm(r)
+            F_g = cow_mass * gravity
+            
+            cow.acc = (F_spring + F_g) / cow_mass
+            cow.vel += cow.acc * dt
+            cow.pos += cow.vel * dt
+    
     
     
     
