@@ -26,7 +26,8 @@ attatchment_point = box(pos=vector(0, 7.5, 0), size=vector(1, 0.1, 1), color=col
 spring0 = helix(pos=vector(0,7.5,-0.5), axis=vector(0,-1,0), size=vector(spring_length,1,1), stiffness=1.0 )
 init_cowpos = spring0.pos+spring0.axis
 axis = spring0.axis
-cow = sphere(pos=init_cowpos, radius=0.2, color=color.white)
+cow = sphere(pos=init_cowpos, radius=0.4, texture = "https://thumbs.dreamstime.com/b/seamless-pattern-cow-skin-black-white-vector-illustration-59112851.jpg")
+
 
 
 
@@ -148,8 +149,16 @@ while True:
         startButton.text = "Start"
         cow.pos = cow.pos
         spring0.axis = spring0.axis
+        cow_mass_slider.disabled = False
+        rope_length_slider.disabled = False
+        angle_slider_long.disabled = False
+        angle_slider_zaxis.disabled = False
 
     if running:  
+        cow_mass_slider.disabled = True
+        rope_length_slider.disabled = True
+        angle_slider_long.disabled = True
+        angle_slider_zaxis.disabled = True
         ke_curve.visible = True
         startButton.text = "Stop"
         r = cow.pos-spring0.pos
