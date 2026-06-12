@@ -11,6 +11,7 @@ init_longangle = pi
 init_zangle = 0
 springList = []
 massList = []
+isWet = False
 springPos = vector(0,5,0)
 springAxis = vector(0,-2,0)
 scene.camera.pos = vec(0,2,3)
@@ -18,7 +19,7 @@ scene.forward = vec(0,0,-1)
 scene.center = vec(0,0,0.2)
 addSpring = False
 scene.background = vector(0.69, 0.859, 1)
-water = box(pos=vector(0, -5, 0), size=vec(100, 1, 20), texture = "https://static.vecteezy.com/system/resources/previews/042/657/776/non_2x/water-texture-seamless-repeat-pattern-with-tranquil-turquoise-ripples-vector.jpg")
+water = box(pos=vector(0, -5, 0), size=vec(100, 10, 100), texture = "https://static.vecteezy.com/system/resources/previews/042/657/776/non_2x/water-texture-seamless-repeat-pattern-with-tranquil-turquoise-ripples-vector.jpg", opacity = 0.5)
 scene.ambient = vec(0.5, 0.5, 0.5)
 
 #The following variables are calculated based on the sliders 
@@ -140,9 +141,7 @@ resetButon = button(bind=reset, text = "Reset", background = color.blue, pos = s
 
 energy_graph = graph(title="Kinetic Energy vs. Time", xtitle="Time (s)", ytitle="Kinetic Energy (J)", align = "left")
 ke_curve = gcurve(graph = energy_graph, color=color.blue, label = "Kinetic Energy")
-#ue_graph = graph(title="Elastic Potential Energy vs. Time", xtitle="Time (s)", ytitle="Elastic Potential Energy (J)", align = "left")
 ue_curve = gcurve(graph = energy_graph, color=color.red, label = "Elastic Potential Energy")
-#ug_graph = graph(title="Gravitational Potential Energy vs. Time", xtitle="Time (s)", ytitle="Gravitational Potential Energy (J)", align = "left")
 ug_curve = gcurve(graph = energy_graph, color=color.green, label = "Gravitational Potential Energy")
 phase_graph = graph(title="Phase Graph", xtitle="Cow Position", ytitle="Cow Velocity", align = "left")
 phase_curve = gcurve(color=color.orange, label = "Phase Graph")
@@ -151,6 +150,7 @@ ugenergy = 0
 
 def reset():
     global running, t, cow, spring0, springList, addSpring, massList
+    cow.texture =  "https://thumbs.dreamstime.com/b/seamless-pattern-cow-skin-black-white-vector-illustration-59112851.jpg"
     ke_curve.data = []
     ue_curve.data = []
     ug_curve.data = []
@@ -207,6 +207,9 @@ def bouncing():
 
 while True:  
     rate(1/dt)
+    if cow.pos.y < 0:
+        cow.texture = "https://cdn.pixabay.com/photo/2025/01/03/02/05/blue-9307036_1280.jpg"
+    
     if not running: 
         cow_mass_slider.disabled = False
         rope_length_slider.disabled = False
@@ -238,8 +241,11 @@ while True:
             cow.pos = springList[-1].pos + springList[-1].axis
             spring0 = springList[0]
             addSpring = not addSpring
+            
     if running: 
-        global node_mass, k_each
+        global node_mass, k_each, rope_length, node_num, elongation
+        elasticenergy = 0
+        init_length = rope_length / node_num
         cow_mass_slider.disabled = True
         rope_length_slider.disabled = True
         angle_slider_long.disabled = True
@@ -303,7 +309,9 @@ while True:
             height = init_cowpos.y - cow.pos.y
             t+=dt
             kinenergy = (0.5)*cow_mass*(cow.vel).mag**2
-            elasticenergy = (0.5) * k_rope * elongation ** 2
+            for s in springList:
+                elongation= s.length - init_length
+                elasticenergy+= (0.5) * k_each * elongation ** 2
             ugenergy = cow_mass * height * gravity 
             ug_curve.plot(t, ugenergy.y)
             ke_curve.plot(t, kinenergy)
