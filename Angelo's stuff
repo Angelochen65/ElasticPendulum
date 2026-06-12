@@ -62,7 +62,7 @@ def change_length(l):
     currentPos = springPos
     for i in range(node_num):
         springList[i].pos = currentPos
-        springList[i].axis = vector(0, -eachChange, 0)
+        springList[i].axis = norm(springList[i].axis) * eachChange
         currentPos += springList[i].axis
         if i < len(massList):
             massList[i].pos = currentPos
@@ -99,7 +99,9 @@ def change_angle_long(ang):
         if i < len(massList):
             massList[i].pos = currentPos
     cow.pos = currentPos
+
     LongAngleText.text = '{:1.2f} degrees'.format(ang.value)
+    
 
 def change_angle_zaxis(ang):
     each = rope_length / node_num
@@ -112,6 +114,7 @@ def change_angle_zaxis(ang):
         if i < len(massList):
             massList[i].pos = currentPos
     cow.pos = currentPos
+
         
         
 
@@ -318,6 +321,8 @@ while True:
             ue_curve.plot(t, elasticenergy)
             phase_curve.plot(cow.pos.x, cow.vel.x)
             
+# kyle was here
+
         else: 
             r = cow.pos-spring0.pos
             r_hat = norm(r)
