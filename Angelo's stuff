@@ -11,6 +11,7 @@ init_longangle = pi
 init_zangle = 0
 springList = []
 massList = []
+isWet = False
 springPos = vector(0,5,0)
 springAxis = vector(0,-2,0)
 scene.camera.pos = vec(0,2,3)
@@ -149,6 +150,7 @@ ugenergy = 0
 
 def reset():
     global running, t, cow, spring0, springList, addSpring, massList
+    cow.texture =  "https://thumbs.dreamstime.com/b/seamless-pattern-cow-skin-black-white-vector-illustration-59112851.jpg"
     ke_curve.data = []
     ue_curve.data = []
     ug_curve.data = []
@@ -205,6 +207,9 @@ def bouncing():
 
 while True:  
     rate(1/dt)
+    if cow.pos.y < 0:
+        cow.texture = "https://cdn.pixabay.com/photo/2025/01/03/02/05/blue-9307036_1280.jpg"
+    
     if not running: 
         cow_mass_slider.disabled = False
         rope_length_slider.disabled = False
@@ -236,6 +241,7 @@ while True:
             cow.pos = springList[-1].pos + springList[-1].axis
             spring0 = springList[0]
             addSpring = not addSpring
+            
     if running: 
         global node_mass, k_each, rope_length, node_num, elongation
         elasticenergy = 0
