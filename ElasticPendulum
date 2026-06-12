@@ -5,32 +5,29 @@ cow_mass = 50 #initial mass of cow
 spring_num = 1 #initial number of springs VARIABLE
 k_rope = 500 #total spring constant VARIABLE
 node_num = 1 #total number of nodes VARIABLE; 1 is default, with spring and cow 
-spring_num = node_num 
-rope_length = 1 #VARIABLE
+rope_length = 2 #VARIABLE
 rope_mass = 5 #VARIABLE 
 init_longangle = pi
 init_zangle = 0
 springList = []
+massList = []
 springPos = vector(0,5,0)
 springAxis = vector(0,-2,0)
 scene.camera.pos = vec(0,5,5)
 addSpring = False
 
-scene = canvas(width=500, height=400, title="<b>Rope Simulation<b>\n\n")
-scene.camera.pos = vec(0,5,5)
-
 #The following variables are calculated based on the sliders 
-k_each = k_rope / spring_num #CALCULATED 
-spring_length = rope_length / spring_num #CALCULATED 
+k_each = k_rope / node_num #CALCULATED 
+spring_length = rope_length / node_num #CALCULATED 
 gravity = vector(0,-9.81,0)
 node_mass = rope_mass / node_num #CALCULATED 
 
 
-attatchment_point = box(pos=vector(0, 7.5, 0), size=vector(1, 0.1, 1), color=color.gray(1))
-spring0 = helix(pos=vector(0,7.5,-0.5), axis=vector(0,-1,0), size=vector(spring_length,1,1), stiffness=1.0 )
-init_cowpos = spring0.pos+spring0.axis
+attatchment_point = box(pos=springPos, size=vector(2, 0.1, 0.1), color=color.gray(1))
+spring0 = helix(pos=vector(0,5,0), axis=springAxis, size=vector(spring_length,1,1), stiffness=1 )
 axis = spring0.axis
-cow = sphere(pos=init_cowpos, radius=0.2, texture = "https://thumbs.dreamstime.com/b/seamless-pattern-cow-skin-black-white-vector-illustration-59112851.jpg")
+init_cowpos = springPos + springAxis
+cow = sphere(pos=springPos + springAxis, radius=0.4, texture = "https://thumbs.dreamstime.com/b/seamless-pattern-cow-skin-black-white-vector-illustration-59112851.jpg")
 springList.append(spring0)
 
 
@@ -46,10 +43,12 @@ def change_nodes(num):
     
 scene.append_to_caption("Change Nodes\n\n")
 nodes_slider = slider(bind=change_nodes, min=1, max = 5, step = 1, value = 1)
-NodesText = wtext(text='{:1.2f} nodes'.format(nodes_slider.value))
+NodesText = wtext(text='{:1.2f}'.format(nodes_slider.value))
 scene.append_to_caption('\n\n')
 
 
+
+    
 
 def change_length(l):
     totalChange = l.value
@@ -63,16 +62,11 @@ def change_length(l):
             massList[i].pos = currentPos
     cow.pos= currentPos
     LengthText.text = '{:1.2f}'.format(l.value)
-    
-#    rope_length = l.value
-#    spring_length = rope_length / spring_num #CALCULATED 
-#    for i in range(len(springList)):
-#        springList[i].length = spring_length
 
 
 scene.append_to_caption("Spring Length\n\n")
 rope_length_slider = slider(bind=change_length, min=spring_length, max=10, step=0.1, value=spring_length)
-LengthText = wtext(text='{:1.2f} centimeters'.format(rope_length_slider.value))
+LengthText = wtext(text='{:1.2f}'.format(rope_length_slider.value))
 scene.append_to_caption('\n\n')
    
 def change_cow_mass(num):
@@ -83,43 +77,49 @@ def change_cow_mass(num):
     
 scene.append_to_caption("Mass of Cow\n\n")
 cow_mass_slider = slider(bind=change_cow_mass, min=10, max=100, step=1, value=cow_mass)
-CowText = wtext(text='{:1.2f} kilograms'.format(change_cow_mass.value))
+CowText = wtext(text='{:1.2f}'.format(change_cow_mass.value))
 scene.append_to_caption('\n\n')
 
 def change_angle_long(ang):
-    global initial_ang
-    intitial_ang = ang.value
-    r = vector(-sin(ang.value), cos(ang.value), 0)
     
     each = rope_length / node_num
     currentPos = springPos
     for i in range(node_num):
         springList[i].pos = currentPos
-        springList[i].axis = r * each
+        springList[i].axis.x = -sin(ang.value) * each
+        springList[i].axis.y = cos(ang.value) * each
         currentPos+= springList[i].axis
         
         if i < len(massList):
             massList[i].pos = currentPos
     cow.pos = currentPos
     LongAngleText.text = '{:1.2f}'.format(ang.value)
-    
+
 def change_angle_zaxis(ang):
-    spring_length=rope_length_slider.value
-    spring0.axis.z = -spring_length*sin(ang.value)
-    cow.pos = spring0.pos + spring0.axis
-    global axis
-    axis = spring0.axis
-    ZAngleText.text = '{:1.2f}'.format(degrees(ang.value))
+    each = rope_length / node_num
+    currentPos = springPos
+    for i in range(node_num):
+        springList[i].pos = currentPos
+        springList[i].axis.z = -sin(ang.value) * each
+        currentPos += springList[i].axis
+        
+        if i < len(massList):
+            massList[i].pos = currentPos
+    cow.pos = currentPos
+        
+        
+
+    ZAngleText.text = '{:1.2f}'.format(ang.value)
     
     
 
 scene.append_to_caption("XY Spring Angle\n\n")
 angle_slider_long = slider(bind=change_angle_long, min=pi/2, max=3*pi/2, step=pi/30, value=init_longangle)
-LongAngleText = wtext(text='{:1.2f} degrees'.format(angle_slider_long.value))
+LongAngleText = wtext(text='{:1.2f}'.format(angle_slider_long.value))
 scene.append_to_caption('\n\n')
 scene.append_to_caption("Z Spring Angle\n\n")
 angle_slider_zaxis = slider(bind=change_angle_zaxis, min=-pi/2, max=pi/2, step=pi/30, value=init_zangle)
-ZAngleText = wtext(text='{:1.2f} degrees'.format(angle_slider_zaxis.value))
+ZAngleText = wtext(text='{:1.2f}'.format(angle_slider_zaxis.value))
 
 t = 0
 dt = 0.001
@@ -133,7 +133,6 @@ running = False
 startButton = button(bind=bouncing, text="Click to start", background=color.red, pos=scene.title_anchor)
 resetButon = button(bind=reset, text = "Reset", background = color.blue, pos = scene.title_anchor)
 
-#Setting up graphs
 ke_graph = graph(title="Kinetic Energy vs. Time", xtitle="Time (s)", ytitle="Kinetic Energy (J)", align = "left")
 ke_curve = gcurve(color=color.blue, label = "Kinetic Energy")
 ue_graph = graph(title="Elastic Potential Energy vs. Time", xtitle="Time (s)", ytitle="Elastic Potential Energy (J)", align = "left")
@@ -147,28 +146,37 @@ ugenergy = 0
 
 def reset():
     global running, t, cow, spring0, springList, addSpring, massList
+    ke_curve.data = []
+    ue_curve.data = []
+    ug_curve.data = []
+    phase_curve.data = []
     startButton.text = "Click to Start"
     running = False
     addSpring = False
-    for s in springList:
-        s.visible = False
-    for m in massList: 
-        m.visible = False
-    massList = []
-    springList = []
-    
-    currentPos = springPos
-    for i in range(node_num):
-        newSpring = helix(pos = currentPos, axis = eachAxis, size=vector(spring_length / node_num,1,1), stiffness = 1)
-        springList.append(newSpring)
-        currentPos+= eachAxis
-        if( i < node_num - 1):
-            newMass = sphere(pos = currentPos, radius = 0.1, color = color.white)
-            newMass.vel = vector(0,0,0)
-            newMass.acc = vector(0,0,0)
-            massList.append(newMass)
-    cow.pos = springList[-1].pos + springList[-1].axis
-    spring0 = springList[0]
+    if node_num > 1:
+        for s in springList:
+            s.visible = False
+        for m in massList: 
+            m.visible = False
+        massList = []
+        springList = []
+        
+        currentPos = springPos
+        for i in range(node_num):
+            newSpring = helix(pos = currentPos, axis = eachAxis, size=vector(spring_length / node_num,1,1), stiffness = 1)
+            springList.append(newSpring)
+            currentPos+= eachAxis
+            if( i < node_num - 1):
+                newMass = sphere(pos = currentPos, radius = 0.1, color = color.white)
+                newMass.vel = vector(0,0,0)
+                newMass.acc = vector(0,0,0)
+                massList.append(newMass)
+        cow.pos = springList[-1].pos + springList[-1].axis
+        spring0 = springList[0]
+    else:
+        spring0.pos = springPos
+        spring0.axis = springAxis
+        cow.pos = springPos + springAxis
     t = 0
     dt = 0.001
     mass_init_v = 0
@@ -181,7 +189,7 @@ def reset():
     cow_mass_slider.value = cow_mass
     scene.camera.pos = vec(0,5,5)
     wt.text=rope_length
-    
+   
     
    
 
@@ -193,6 +201,12 @@ def bouncing():
 while True:  
     rate(1/dt)
     if not running: 
+        cow_mass_slider.disabled = False
+        rope_length_slider.disabled = False
+        angle_slider_long.disabled = False
+        angle_slider_zaxis.disabled = False
+        nodes_slider.disabled = False
+
         startButton.text = "Start"
         if(node_num > 1 and addSpring):
             for s in springList:
@@ -219,6 +233,13 @@ while True:
             addSpring = not addSpring
     if running: 
         global node_mass, k_each
+        cow_mass_slider.disabled = True
+        rope_length_slider.disabled = True
+        angle_slider_long.disabled = True
+        angle_slider_zaxis.disabled = True
+        nodes_slider.disabled = True
+        
+        ke_curve.visible = True
         startButton.text = "Stop"
         if len(massList) > 0:
             springList[0].pos = springPos
@@ -278,32 +299,24 @@ while True:
             elongation = current_length - spring_length  
             spring_force = - k_each * elongation * r_hat
             gravitational_force = cow_mass * gravity   
-            f_net = gravitational_force + spring_force
-            cow.acc = f_net / cow_mass
+            F_net = gravitational_force + spring_force
+            cow.acc = F_net / cow_mass
             cow.vel+= cow.acc * dt
             cow.pos+= cow.vel * dt
             spring0.axis = cow.pos - spring0.pos
+        
+        
+        height = init_cowpos.y - cow.pos.y
+        t+=dt
+        kinenergy = (0.5)*cow_mass*(cow.vel).mag**2
+        elasticenergy = (0.5) * k_rope * elongation ** 2
+        ugenergy = cow_mass * height * gravity 
+        ug_curve.plot(t, ugenergy.y)
+        ke_curve.plot(t, kinenergy)
+        ue_curve.plot(t, elasticenergy)
+        phase_curve.plot(cow.pos.x, cow.vel.x)
 
-            height = init_cowpos.y - cow.pos.y
-            t= t + dt
-#establishing graph values
-            kinenergy = (0.5)*cow_mass*(cow.vel).mag**2
-            elasticenergy = (0.5) * k_rope * elongation ** 2
-            ugenergy = gravitational_force * height
 
-#updating graphs
-            ug_curve.plot(t, ugenergy.y)
-            ke_curve.plot(t, kinenergy)
-            ue_curve.plot(t, elasticenergy)
-            phase_curve.plot(cow.pos.x, cow.vel.x)
     
     
     
-
-#def change_nodes(num):
-
-# L = middleball.pos-topball.pos
-# Lhat = L/mag(L)
-# stretch = mag(L) - unstretched_length
-# spring_Force = -k*s*Lhat
-# gravity_Force = -node_mass * gravity
