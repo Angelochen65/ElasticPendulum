@@ -23,7 +23,7 @@ water = box(pos=vector(0, -5, 0), size=vec(100, 10, 100), texture = "https://sta
 scene.ambient = vec(0.5, 0.5, 0.5)
 
 #The following variables are calculated based on the sliders 
-k_each = k_rope / node_num #CALCULATED 
+k_each = k_rope * node_num #CALCULATED 
 spring_length = rope_length / node_num #CALCULATED 
 gravity = vector(0,-9.81,0)
 node_mass = rope_mass / node_num #CALCULATED 
