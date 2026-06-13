@@ -140,7 +140,7 @@ startButton = button(bind=bouncing, text="Click to start", background=color.red,
 resetButon = button(bind=reset, text = "Reset", background = color.blue, pos = scene.title_anchor)
 traceButton = button(bind=toggle, text = "Toggle Trace", background = color.green, pos = scene.title_anchor)
 
-energy_graph = graph(title="Kinetic Energy vs. Time", xtitle="Time (s)", ytitle="Kinetic Energy (J)", align = "left")
+energy_graph = graph(title="Energy vs. Time", xtitle="Time (s)", ytitle="Energy (J)", align = "left")
 ke_curve = gcurve(graph = energy_graph, color=color.blue, label = "Kinetic Energy")
 ue_curve = gcurve(graph = energy_graph, color=color.red, label = "Elastic Potential Energy")
 ug_curve = gcurve(graph = energy_graph, color=color.green, label = "Gravitational Potential Energy")
