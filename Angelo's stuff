@@ -39,7 +39,7 @@ cow = sphere(pos=springPos + springAxis, radius=0.4, make_trail = False  ,textur
 def change_nodes(num):
     global node_num, k_each, spring_length, node_mass
     node_num = int(num.value)
-    k_each = k_rope / node_num
+    k_each = k_rope * node_num
     spring_length = rope_length/node_num
     node_mass = rope_mass / node_num
     NodesText.text = '{:1.2f}'.format(num.value)
@@ -146,7 +146,7 @@ def toggle():
     global trace
     trace = not trace 
 
-energy_graph = graph(title="Kinetic Energy vs. Time", xtitle="Time (s)", ytitle="Kinetic Energy (J)", align = "left")
+energy_graph = graph(title="Energy vs. Time", xtitle="Time (s)", ytitle="Energy (J)", align = "left")
 ke_curve = gcurve(graph = energy_graph, color=color.blue, label = "Kinetic Energy")
 ue_curve = gcurve(graph = energy_graph, color=color.red, label = "Elastic Potential Energy")
 ug_curve = gcurve(graph = energy_graph, color=color.green, label = "Gravitational Potential Energy")
@@ -183,7 +183,7 @@ def reset():
             springList.append(newSpring)
             currentPos+= eachAxis
             if( i < node_num - 1):
-                newMass = sphere(pos = currentPos, radius = 0.1, color = color.white)
+                newMass = sphere(pos = currentPos, radius = 0.1, color = color.red)
                 newMass.vel = vector(0,0,0)
                 newMass.acc = vector(0,0,0)
                 massList.append(newMass)
@@ -258,8 +258,6 @@ while True:
             
     if running: 
         global node_mass, k_each, rope_length, node_num, elongation, trace
-        elasticenergy = 0
-        init_length = rope_length / node_num
         cow_mass_slider.disabled = True
         rope_length_slider.disabled = True
         angle_slider_long.disabled = True
@@ -291,16 +289,16 @@ while True:
                     above = massList[i-1].pos
                 
                 r_top = above - m.pos
-                F_top = k_each * (mag(r_top) - spring_length/node_num) * norm(r_top)
+                F_top = k_each * (mag(r_top) - spring_length) * norm(r_top)
                 
                 if i < len(massList) - 1:
                     below = massList[i+1].pos
                 else:
                     below = cow.pos
                 r_below = below - m.pos
-                F_below = k_each * (mag(r_below) - spring_length/node_num) * norm(r_below)
+                F_below = k_each * (mag(r_below) - spring_length) * norm(r_below)
                 
-                F_g = (rope_mass/node_num) * gravity
+                F_g = (node_mass) * gravity
                 F_net = F_top + F_below + F_g
                 
                 forces.append(F_net)
@@ -321,7 +319,7 @@ while True:
                 cow.clear_trail()
             last_mass = massList[-1]
             r = cow.pos - last_mass.pos
-            F_spring = -k_each * (mag(r) - spring_length/node_num) * norm(r)
+            F_spring = -k_each * (mag(r) - spring_length) * norm(r)
             F_g = cow_mass * gravity
             
             cow.acc = (F_spring + F_g) / cow_mass
@@ -331,11 +329,15 @@ while True:
             height = init_cowpos.y - cow.pos.y
             t+=dt
             kinenergy = (0.5)*cow_mass*(cow.vel).mag**2
+            ugenergy = cow_mass * cow.pos.y * -9.81
+            for m in massList:
+                kinenergy+= 0.5 * node_mass * mag(m.vel)**2
+                ugenergy += node_mass * -9.81 * m.pos.y
             for s in springList:
-                elongation= s.length - init_length
+                elongation= mag(s.axis) - init_length
                 elasticenergy+= (0.5) * k_each * elongation ** 2
-            ugenergy = cow_mass * height * gravity 
-            ug_curve.plot(t, ugenergy.y)
+            
+            ug_curve.plot(t, ugenergy)
             ke_curve.plot(t, kinenergy)
             ue_curve.plot(t, elasticenergy)
             phase_curve.plot(cow.pos.x, cow.vel.x)
@@ -365,8 +367,8 @@ while True:
             t+=dt
             kinenergy = (0.5)*cow_mass*(cow.vel).mag**2
             elasticenergy = (0.5) * k_rope * elongation ** 2
-            ugenergy = cow_mass * height * gravity 
-            ug_curve.plot(t, ugenergy.y)
+            ugenergy = cow_mass * cow.pos.y * -9.81 
+            ug_curve.plot(t, ugenergy)
             ke_curve.plot(t, kinenergy)
             ue_curve.plot(t, elasticenergy)
             phase_curve.plot(cow.pos.x, cow.vel.x)
