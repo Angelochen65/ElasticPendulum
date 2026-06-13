@@ -220,7 +220,13 @@ while True:
     rate(1/dt)
     if cow.pos.y < 0:
         cow.texture = "https://cdn.pixabay.com/photo/2025/01/03/02/05/blue-9307036_1280.jpg"
-    
+    if trace: 
+        cow.make_trail = True
+        traceButton.text = "Trace On"
+    if not trace:
+        traceButton.text = "Trace Off"
+        cow.make_trail = False
+        cow.clear_trail()
     if not running: 
         cow_mass_slider.disabled = False
         rope_length_slider.disabled = False
@@ -308,13 +314,6 @@ while True:
             m = massList[i]
             m.pos += m.vel * dt
         if len(massList) > 0:
-            if trace: 
-                cow.make_trail = True
-                traceButton.text = "Trace On"
-            if not trace:
-                traceButton.text = "Trace Off"
-                cow.make_trail = False
-                cow.clear_trail()
             last_mass = massList[-1]
             r = cow.pos - last_mass.pos
             F_spring = -k_each * (mag(r) - spring_length/node_num) * norm(r)
